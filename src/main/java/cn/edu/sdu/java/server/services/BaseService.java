@@ -167,7 +167,7 @@ public class BaseService {
         List<UserType> uList = userTypeRepository.findAll();
         List<OptionItem> itemList = new ArrayList<>();
         for (UserType ut : uList) {
-            itemList.add(new OptionItem(ut.getId(), null, ut.getName().name()));
+            itemList.add(new OptionItem(ut.getId(), null, ut.getName()));
         }
         return new OptionItemList(0, itemList);
     }

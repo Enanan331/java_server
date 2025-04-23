@@ -21,9 +21,15 @@ public class Fee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer feeId;
+
     @ManyToOne
-    @JoinColumn(name = "personId")
+    @JoinColumn(name = "studentId")
     private Student student;
+
+    @ManyToOne
+    @JoinColumn(name = "teacherId")
+    private Teacher teacher;
+
     @Size(max = 20)
     private String day;
     private Double money;

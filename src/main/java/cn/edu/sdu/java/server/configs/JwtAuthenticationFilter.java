@@ -89,6 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String startTime = DateTimeTool.parseDateTime(startDate);
             logger.info(url + "," +username+"," + startTime+ "," + requestTime);
         } catch (Exception exception) {
+            exception.printStackTrace();
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
     }
