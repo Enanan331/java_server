@@ -1,6 +1,8 @@
 package cn.edu.sdu.java.server.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,22 +12,28 @@ import lombok.Setter;
 @Table(	name = "family_member",
         uniqueConstraints = {
         })
+
 public class FamilyMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer memberId;
 
     @ManyToOne
-    @JoinColumn(name="personId")
-    private Student student;
+    @JoinColumn(name="studentPersonId")
+    private Student student;//通过输入的学生姓名查找出来
+
+//    @Size(max = 50)
+//    private String studentName;//
+
     @Size(max=10)
-    private String relation;
+    private String relation;//?
     @Size(max=30)
-    private String name;
+    private String name;//
     @Size(max=10)
-    private String gender;
-    private Integer age;
+    private String gender;//
+    @Size(max=3)
+    private String age;//
     @Size(max=50)
-    private String unit;
+    private String unit;//工作单位
 
 }

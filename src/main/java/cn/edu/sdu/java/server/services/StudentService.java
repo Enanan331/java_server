@@ -463,7 +463,7 @@ public class StudentService {
         f.setRelation(CommonMethod.getString(form,"relation"));
         f.setName(CommonMethod.getString(form,"name"));
         f.setGender(CommonMethod.getString(form,"gender"));
-        f.setAge(CommonMethod.getInteger(form,"age"));
+        f.setAge(CommonMethod.getString(form,"age"));
         f.setUnit(CommonMethod.getString(form,"unit"));
         familyMemberRepository.save(f);
         return CommonMethod.getReturnMessageOK();
