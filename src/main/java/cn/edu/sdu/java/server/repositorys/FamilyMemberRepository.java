@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public interface FamilyMemberRepository extends JpaRepository<FamilyMember,Integer> {
     List<FamilyMember> findByStudentPersonId(Integer personId);
-    @Query(value = "from FamilyMember where ?1='' or name like %?1% or student.person.name like %?1%")
-    List<FamilyMember> findByStudentOrFamilyMemberName(String name);
+//    @Query(value = "from FamilyMember where ?1='' or name like %?1% or student.person.name like %?1%")
+    List<FamilyMember> findByName(String name);
 
     Optional<FamilyMember> findByMemberId(Integer memberId);
 }

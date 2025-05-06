@@ -418,66 +418,6 @@ public class StudentService {
     }
 
 
-
-    /*
-        FamilyMember
-     */
-    public DataResponse getFamilyMemberList(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");
-        List<FamilyMember> fList = familyMemberRepository.findByStudentPersonId(personId);
-        List<Map<String,Object>> dataList = new ArrayList<>();
-        Map<String,Object> m;
-        if (fList != null) {
-            for (FamilyMember f : fList) {
-                m = new HashMap<>();
-                m.put("memberId", f.getMemberId());
-                m.put("personId", f.getStudent().getPersonId());
-                m.put("relation", f.getRelation());
-                m.put("name", f.getName());
-                m.put("gender", f.getGender());
-                m.put("age", f.getAge()+"");
-                m.put("unit", f.getUnit());
-                dataList.add(m);
-            }
-        }
-        return CommonMethod.getReturnData(dataList);
-    }
-
-    public DataResponse familyMemberSave(DataRequest dataRequest) {
-        Map<String,Object> form = dataRequest.getMap("form");
-        Integer personId = CommonMethod.getInteger(form,"personId");
-        Integer memberId = CommonMethod.getInteger(form,"memberId");
-        Optional<FamilyMember> op;
-        FamilyMember f = null;
-        if(memberId != null) {
-            op = familyMemberRepository.findById(memberId);
-            if(op.isPresent()) {
-                f = op.get();
-            }
-        }
-        if(f== null) {
-            f = new FamilyMember();
-            assert personId != null;
-            f.setStudent(studentRepository.findById(personId).get());
-        }
-        f.setRelation(CommonMethod.getString(form,"relation"));
-        f.setName(CommonMethod.getString(form,"name"));
-        f.setGender(CommonMethod.getString(form,"gender"));
-        f.setAge(CommonMethod.getString(form,"age"));
-        f.setUnit(CommonMethod.getString(form,"unit"));
-        familyMemberRepository.save(f);
-        return CommonMethod.getReturnMessageOK();
-    }
-
-    public DataResponse familyMemberDelete(DataRequest dataRequest) {
-        Integer memberId = dataRequest.getInteger("memberId");
-        Optional<FamilyMember> op;
-        op = familyMemberRepository.findById(memberId);
-        op.ifPresent(familyMemberRepository::delete);
-        return CommonMethod.getReturnMessageOK();
-    }
-
-
     public DataResponse importFeeDataWeb(Map<String,Object> request,MultipartFile file) {
         Integer personId = CommonMethod.getInteger(request, "personId");
         try {

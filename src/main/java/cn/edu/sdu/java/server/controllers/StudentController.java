@@ -120,26 +120,6 @@ public class StudentController {
         return studentService.getStudentPageData(dataRequest);
     }
 
-    /*
-        FamilyMember
-     */
-    @PostMapping("/getFamilyMemberList")
-    @PreAuthorize(" hasRole('ADMIN') or  hasRole('STUDENT')")
-    public DataResponse getFamilyMemberList(@Valid @RequestBody DataRequest dataRequest) {
-        return studentService.getFamilyMemberList(dataRequest);
-    }
-
-    @PostMapping("/familyMemberSave")
-    @PreAuthorize(" hasRole('ADMIN') or  hasRole('STUDENT')")
-    public DataResponse familyMemberSave(@Valid @RequestBody DataRequest dataRequest) {
-        return studentService.familyMemberSave(dataRequest);
-    }
-
-    @PostMapping("/familyMemberDelete")
-    @PreAuthorize(" hasRole('ADMIN') or  hasRole('STUDENT')")
-    public DataResponse familyMemberDelete(@Valid @RequestBody DataRequest dataRequest) {
-        return studentService.familyMemberDelete(dataRequest);
-    }
 
 
     @PostMapping("/importFeeDataWeb")
