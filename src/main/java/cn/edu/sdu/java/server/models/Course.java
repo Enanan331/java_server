@@ -15,6 +15,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -32,10 +36,29 @@ public class Course  {
     @Size(max = 50)
     private String name;
     private Integer credit;
+    private Integer selectNum;
+    private Integer attendenceNum;
     @ManyToOne
     @JoinColumn(name="pre_course_id")
     private Course preCourse;
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Homework> homework = new ArrayList<>();//作业,一门课可能有多个作业
+
+    @ElementCollection
+    @CollectionTable(
+            name = "course_textbooks",
+            joinColumns = @JoinColumn(name = "course_id")
+    )
+    @Column(name = "textbook_name")
+    @Size(max = 50) // 单个课本名称的最大长度
+    private List<String> textbooks = new ArrayList<>(); // 课本名称列表
+
     @Size(max = 12)
     private String coursePath;
+
+    // 添加课本的便利方法
+    public void addTextbook(String textbookName) {
+        this.textbooks.add(textbookName);
+    }
 
 }
