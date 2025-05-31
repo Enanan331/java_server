@@ -9,6 +9,7 @@ import cn.edu.sdu.java.server.repositorys.HomeworkRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
@@ -103,20 +104,26 @@ public class CourseService {
         systemService.modifyLog(c,isNew);
         return CommonMethod.getReturnData(c.getCourseId());
     }
+    @Transactional
     public DataResponse courseDelete(DataRequest dataRequest) {
         Integer courseId = dataRequest.getInteger("courseId");
         Optional<Course> op;
         Course c= null;
-        if(courseId != null) {
-            op = courseRepository.findById(courseId);
-            if(op.isPresent()) {
-                c = op.get();
-                List<Homework> hlist=c.getHomework();
-                for(Homework h:hlist) {
-                    homeworkRepository.delete(h);
-                }
-                courseRepository.delete(c);
-            }
+        if (courseId != null) {
+            courseRepository.findById(courseId).ifPresent(course -> {
+                // 1. 找到所有将此课程作为preCourse的课程
+                List<Course> dependentCourses = courseRepository.findByPreCourse(course);
+
+                // 2. 清除这些课程的preCourse引用
+                dependentCourses.forEach(dependent -> {
+                    dependent.setPreCourse(null);
+                    courseRepository.save(dependent);
+                });
+
+                // 3. 删除作业和课程本身
+                homeworkRepository.deleteAll(course.getHomework());
+                courseRepository.delete(course);
+            });
         }
         return CommonMethod.getReturnMessageOK();
     }
