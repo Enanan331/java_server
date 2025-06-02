@@ -2,6 +2,7 @@ package cn.edu.sdu.java.server.controllers;
 
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
+import cn.edu.sdu.java.server.payload.response.OptionItemList;
 import cn.edu.sdu.java.server.services.CourseService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,14 @@ public class CourseController {
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse getCourseInfo(@Valid @RequestBody DataRequest dataRequest) {
            return courseService.getCourseInfo(dataRequest);
+    }
+    @PostMapping("/courseEdit")
+    public DataResponse courseEdit(@Valid @RequestBody DataRequest dataRequest) {
+           return courseService.courseEdit(dataRequest);
+    }
+    @PostMapping("/getCourseItemOptionList")
+    public OptionItemList getCourseItemOptionList(@Valid @RequestBody DataRequest dataRequest) {
+           return courseService.getCourseItemOptionList(dataRequest);
     }
     @PostMapping("/courseSave")
     public DataResponse courseSave(@Valid @RequestBody DataRequest dataRequest) {

@@ -35,9 +35,9 @@ public class Course  {
 
     @Size(max = 50)
     private String name;
-    private Integer credit;
-    private Integer selectNum;
-    private Integer attendenceNum;
+    private String credit;
+    private String selectNum;
+    private String attendenceNum;
     @ManyToOne
     @JoinColumn(name="pre_course_id")
     private Course preCourse;

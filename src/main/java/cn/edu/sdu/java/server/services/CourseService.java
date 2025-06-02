@@ -4,6 +4,8 @@ import cn.edu.sdu.java.server.models.Course;
 import cn.edu.sdu.java.server.models.Homework;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
+import cn.edu.sdu.java.server.payload.response.OptionItem;
+import cn.edu.sdu.java.server.payload.response.OptionItemList;
 import cn.edu.sdu.java.server.repositorys.CourseRepository;
 import cn.edu.sdu.java.server.repositorys.HomeworkRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
@@ -73,33 +75,66 @@ public class CourseService {
         }
         return CommonMethod.getReturnData(dataList);
     }
-
+    public DataResponse courseEdit(DataRequest dataRequest) {
+        Map<String,Object> form = dataRequest.getMap("form");
+        String num=CommonMethod.getString(form,"num");
+        String selectNum = CommonMethod.getString(form,"selectNum");
+        String attendenceNum = CommonMethod.getString(form,"attendenceNum");
+        String credit = CommonMethod.getString(form,"credit");
+        Course c=null;
+        Optional<Course> op;
+        boolean isNem=false;
+        if(num != null) {
+            op = courseRepository.findByNum(num);
+            if(op.isPresent()) {
+                c = op.get();
+            }
+        }
+        if(CommonMethod.getList(form,"textbooks")!=null) {
+            List<String> textbooks = (List<String>) CommonMethod.getList(form, "textbooks");
+            c.setTextbooks(textbooks);
+        }
+        c.setCredit(credit);
+        c.setAttendenceNum(attendenceNum);
+        c.setSelectNum(selectNum);
+        courseRepository.save(c);
+        System.out.println("OK");
+        return CommonMethod.getReturnMessageOK();
+    }
     public DataResponse courseSave(DataRequest dataRequest) {
-         Integer courseId = dataRequest.getInteger("courseId");
          Map<String,Object> form=dataRequest.getMap("form");
          String num=CommonMethod.getString(form,"num");
+         String name=CommonMethod.getString(form,"name");
+         Integer preCourseId=CommonMethod.getInteger(form,"preCourseId");
          Course c = null;
          Optional<Course> op;
          boolean isNew = false;
-         if(courseId!=null){
-             op=courseRepository.findById(courseId);
-             if(op.isPresent()) {
-                 c=op.get();
-             }
-         }
+//         if(courseId!=null){
+//             op=courseRepository.findById(courseId);
+//             if(op.isPresent()) {
+//                 c=op.get();
+//             }
+//         }
         Optional<Course> existingCourse = courseRepository.findByNum(num);
         if (existingCourse.isPresent() &&
                 (c== null || !c.getCourseId().equals(num))) {
             return CommonMethod.getReturnMessageError("课序号已存在");
         }
+        if (existingCourse.isPresent() &&
+                (c== null || !c.getCourseId().equals(name))) {
+            return CommonMethod.getReturnMessageError("课程名已存在");
+        }
          if(c==null) {
              c = new Course();
              c.setNum(num);
-             c.setCourseId(courseId);
+//             c.setCourseId(courseId);
              courseRepository.saveAndFlush(c);
              isNew = true;
          }
          c.setName(CommonMethod.getString(form,"name"));
+         if(preCourseId != null) {
+             c.setPreCourse(courseRepository.findById(preCourseId).get());
+         }
         courseRepository.save(c);
         systemService.modifyLog(c,isNew);
         return CommonMethod.getReturnData(c.getCourseId());
@@ -139,5 +174,15 @@ public class CourseService {
         }
         return CommonMethod.getReturnData(getMapFromCourse(c));
     }
+
+    public OptionItemList getCourseItemOptionList(DataRequest dataRequest) {
+        List<Course> cList = courseRepository.findCourseListByNumName("");
+        List<OptionItem> itemList = new ArrayList<>();
+        for (Course c : cList) {
+            itemList.add(new OptionItem(c.getCourseId(),c.getCourseId()+"",c.getName()));
+        }
+        return new OptionItemList(0,itemList);
+    }
+
 
 }
