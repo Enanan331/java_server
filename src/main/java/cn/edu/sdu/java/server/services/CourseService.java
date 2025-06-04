@@ -80,6 +80,7 @@ public class CourseService {
         String num=CommonMethod.getString(form,"num");
         String selectNum = CommonMethod.getString(form,"selectNum");
         String attendenceNum = CommonMethod.getString(form,"attendenceNum");
+        System.out.println(attendenceNum);
         String credit = CommonMethod.getString(form,"credit");
         Course c=null;
         Optional<Course> op;
@@ -98,7 +99,6 @@ public class CourseService {
         c.setAttendenceNum(attendenceNum);
         c.setSelectNum(selectNum);
         courseRepository.save(c);
-        System.out.println("OK");
         return CommonMethod.getReturnMessageOK();
     }
     public DataResponse courseSave(DataRequest dataRequest) {
