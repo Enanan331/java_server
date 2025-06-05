@@ -15,12 +15,15 @@ public class Competition {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer competitionId;
 
-    @NotBlank
     @Size(max = 20)
     private String studentNum;
 
     @Size(max = 50)
     private String studentName;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private Student student;
 
     @Size(max = 50)
     private String subject;

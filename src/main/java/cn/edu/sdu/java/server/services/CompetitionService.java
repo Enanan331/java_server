@@ -1,7 +1,9 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.Competition;
+import cn.edu.sdu.java.server.models.Student;
 import cn.edu.sdu.java.server.repositorys.CompetitionRepository;
+import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
@@ -20,6 +22,9 @@ public class CompetitionService {
 
     @Autowired
     private SystemService systemService;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     public DataResponse getCompetitionList(DataRequest dataRequest) {
         String numName = dataRequest.getString("numName");
@@ -49,9 +54,22 @@ public class CompetitionService {
         String result = CommonMethod.getString(form, "result");
         String competitionTime = CommonMethod.getString(form, "competitionTime");
 
+        // 通过学号查找学生
+        Optional<Student> studentOpt = studentRepository.findByPersonNum(studentNum);
+        if (!studentOpt.isPresent()) {
+            return CommonMethod.getReturnMessageError("该学生不存在，请先在学生管理中添加");
+        }
+        
+        Student student = studentOpt.get();
+        // 验证学生姓名是否匹配
+        if (!student.getPerson().getName().equals(studentName)) {
+            return CommonMethod.getReturnMessageError("学号与姓名不匹配");
+        }
+        
         Competition c = new Competition();
         c.setStudentNum(studentNum);
         c.setStudentName(studentName);
+        c.setStudent(student);
         c.setSubject(subject);
         c.setResult(result);
         c.setCompetitionTime(competitionTime);
