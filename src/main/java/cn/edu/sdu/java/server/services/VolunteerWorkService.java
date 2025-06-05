@@ -281,7 +281,7 @@ public class VolunteerWorkService {
             return false;
         }
 
-        // 将时间转换为分钟数便于比较
+        // 将时间转换为分钟数
         int newStart = convertTimeToMinutes(startTime);
         int newEnd = convertTimeToMinutes(endTime);
 

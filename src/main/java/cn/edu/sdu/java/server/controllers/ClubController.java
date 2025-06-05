@@ -65,7 +65,6 @@ public class ClubController {
         return clubService.getTeacherListAll();
     }
 
-    // 添加获取所有学生列表的接口
     @PostMapping("/getStudentListAll")
     public DataResponse getStudentListAll() {
         return clubService.getStudentListAll();

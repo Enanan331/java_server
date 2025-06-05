@@ -5,18 +5,16 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
-import org.springframework.web.bind.annotation.*;
 
 
-// 修改类名、请求路径和服务注入
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/volunteerWork") // 路径改为kebab-case风格
+@RequestMapping("/api/volunteerWork")
 public class VolunteerWorkController {
     @Autowired
-    private VolunteerWorkService volunteerWorkService; // 替换服务类
+    private VolunteerWorkService volunteerWorkService;
 
-    // 保持方法结构，修改映射路径和方法名称
     @PostMapping("/getVolunteerWorkList")
     public DataResponse getVolunteerWorkList(@Valid @RequestBody DataRequest dataRequest){
         return volunteerWorkService.getVolunteerWorkList(dataRequest);
@@ -27,7 +25,6 @@ public class VolunteerWorkController {
         return volunteerWorkService.addVolunteerWork(dataRequest);
     }
 
-    // ... 保持原有结构修改方法名 ...
     @PostMapping("/editVolunteerWork")
     public DataResponse editVolunteerWork(@Valid @RequestBody DataRequest dataRequest){
         return volunteerWorkService.editVolunteerWork(dataRequest);
