@@ -16,6 +16,12 @@ import jakarta.validation.constraints.Size;
  */
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @Entity
@@ -37,4 +43,24 @@ public class Student {
     @Size(max = 50)
     private String className;
 
+    @ManyToMany(
+            mappedBy = "students",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+    )
+    @OnDelete(action = OnDeleteAction.CASCADE) // 确保数据库级联删除
+    private Set<VolunteerWork> volunteerWorks = new HashSet<>();
+
+    @ManyToMany(
+            mappedBy = "members",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+    )
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Set<Club> clubs = new HashSet<>();
+
+//    @ManyToMany(
+//            mappedBy = "participants",
+//            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+//    )
+//    @OnDelete(action = OnDeleteAction.CASCADE)
+//    private Set<StudentActivity> activities = new HashSet<>();
 }

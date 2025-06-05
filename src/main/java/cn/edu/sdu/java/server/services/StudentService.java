@@ -7,6 +7,7 @@ import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.ComDataUtil;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import cn.edu.sdu.java.server.util.DateTimeTool;
+import jakarta.validation.Valid;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.*;
@@ -35,16 +36,16 @@ public class StudentService {
     private final UserRepository userRepository;  //学生数据操作自动注入
     private final UserTypeRepository userTypeRepository; //用户类型数据操作自动注入
     private final PasswordEncoder encoder;  //密码服务自动注入
-    private final FeeRepository feeRepository;  //消费数据操作自动注入
+//    private final FeeRepository feeRepository;  //消费数据操作自动注入
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
-    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder,  FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, SystemService systemService) {
+    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FamilyMemberRepository familyMemberRepository, SystemService systemService) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.userTypeRepository = userTypeRepository;
         this.encoder = encoder;
-        this.feeRepository = feeRepository;
+//        this.feeRepository = feeRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
     }
@@ -253,83 +254,83 @@ public class StudentService {
         return list;
     }
 
-
-    public List<Map<String,Object>> getStudentFeeList(Integer personId) {
-        List<Fee> sList = feeRepository.findListByStudent(personId);  // 查询某个学生消费记录集合
-        List<Map<String,Object>> list = new ArrayList<>();
-        if (sList == null || sList.isEmpty())
-            return list;
-        Map<String,Object> m;
-        Course c;
-        for (Fee s : sList) {
-            m = new HashMap<>();
-            m.put("title", s.getDay());
-            m.put("value", s.getMoney());
-            list.add(m);
-        }
-        return list;
-    }
-
-
+//
+//    public List<Map<String,Object>> getStudentFeeList(Integer personId) {
+//        List<Fee> sList = feeRepository.findListByStudent(personId);  // 查询某个学生消费记录集合
+//        List<Map<String,Object>> list = new ArrayList<>();
+//        if (sList == null || sList.isEmpty())
+//            return list;
+//        Map<String,Object> m;
+//        Course c;
+//        for (Fee s : sList) {
+//            m = new HashMap<>();
+//            m.put("title", s.getDay());
+//            m.put("value", s.getMoney());
+//            list.add(m);
+//        }
+//        return list;
+//    }
 
 
-    public String importFeeData(Integer personId, InputStream in){
-        try {
-            Student student = studentRepository.findById(personId).get();
-            XSSFWorkbook workbook = new XSSFWorkbook(in);  //打开Excl数据流
-            XSSFSheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rowIterator = sheet.iterator();
-            Row row;
-            Cell cell;
-            int i;
-            i = 1;
-            String day, money;
-            Optional<Fee> fOp;
-            double dMoney;
-            Fee f;
-            rowIterator.next();
-            while (rowIterator.hasNext()) {
-                row = rowIterator.next();
-                cell = row.getCell(0);
-                if (cell == null)
-                    break;
-                day = cell.getStringCellValue();  //获取一行消费记录 日期 金额
-                cell = row.getCell(1);
-                money = cell.getStringCellValue();
-                fOp = feeRepository.findByStudentPersonIdAndDay(personId, day);  //查询是否存在记录
-                if (fOp.isEmpty()) {
-                    f = new Fee();
-                    f.setDay(day);
-                    f.setStudent(student);  //不存在 添加
-                } else {
-                    f = fOp.get();  //存在 更新
-                }
-                if (money != null && !money.isEmpty())
-                    dMoney = Double.parseDouble(money);
-                else
-                    dMoney = 0d;
-                f.setMoney(dMoney);
-                feeRepository.save(f);
-            }
-            workbook.close();  //关闭Excl输入流
-            return null;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return "上传错误！";
-        }
-
-    }
-
-    public DataResponse importFeeData(@RequestBody byte[] barr,
-                                      String personIdStr
-                                      ) {
-        Integer personId =  Integer.parseInt(personIdStr);
-        String msg = importFeeData(personId,new ByteArrayInputStream(barr));
-        if(msg == null)
-            return CommonMethod.getReturnMessageOK();
-        else
-            return CommonMethod.getReturnMessageError(msg);
-    }
+//
+//
+//    public String importFeeData(Integer personId, InputStream in){
+//        try {
+//            Student student = studentRepository.findById(personId).get();
+//            XSSFWorkbook workbook = new XSSFWorkbook(in);  //打开Excl数据流
+//            XSSFSheet sheet = workbook.getSheetAt(0);
+//            Iterator<Row> rowIterator = sheet.iterator();
+//            Row row;
+//            Cell cell;
+//            int i;
+//            i = 1;
+//            String day, money;
+//            Optional<Fee> fOp;
+//            double dMoney;
+//            Fee f;
+//            rowIterator.next();
+//            while (rowIterator.hasNext()) {
+//                row = rowIterator.next();
+//                cell = row.getCell(0);
+//                if (cell == null)
+//                    break;
+//                day = cell.getStringCellValue();  //获取一行消费记录 日期 金额
+//                cell = row.getCell(1);
+//                money = cell.getStringCellValue();
+//                fOp = feeRepository.findByStudentPersonIdAndDay(personId, day);  //查询是否存在记录
+//                if (fOp.isEmpty()) {
+//                    f = new Fee();
+//                    f.setDay(day);
+//                    f.setStudent(student);  //不存在 添加
+//                } else {
+//                    f = fOp.get();  //存在 更新
+//                }
+//                if (money != null && !money.isEmpty())
+//                    dMoney = Double.parseDouble(money);
+//                else
+//                    dMoney = 0d;
+//                f.setMoney(dMoney);
+//                feeRepository.save(f);
+//            }
+//            workbook.close();  //关闭Excl输入流
+//            return null;
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//            return "上传错误！";
+//        }
+//
+//    }
+//
+//    public DataResponse importFeeData(@RequestBody byte[] barr,
+//                                      String personIdStr
+//                                      ) {
+//        Integer personId =  Integer.parseInt(personIdStr);
+//        String msg = importFeeData(personId,new ByteArrayInputStream(barr));
+//        if(msg == null)
+//            return CommonMethod.getReturnMessageOK();
+//        else
+//            return CommonMethod.getReturnMessageError(msg);
+//    }
 
     public ResponseEntity<StreamingResponseBody> getStudentListExcl( DataRequest dataRequest) {
         String numName = dataRequest.getString("numName");
@@ -418,18 +419,19 @@ public class StudentService {
     }
 
 
-    public DataResponse importFeeDataWeb(Map<String,Object> request,MultipartFile file) {
-        Integer personId = CommonMethod.getInteger(request, "personId");
-        try {
-            String msg= importFeeData(personId,file.getInputStream());
-            if(msg == null)
-                return CommonMethod.getReturnMessageOK();
-            else
-                return CommonMethod.getReturnMessageError(msg);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return CommonMethod.getReturnMessageError("上传错误！");
-    }
+
+//    public DataResponse importFeeDataWeb(Map<String,Object> request,MultipartFile file) {
+//        Integer personId = CommonMethod.getInteger(request, "personId");
+//        try {
+//            String msg= importFeeData(personId,file.getInputStream());
+//            if(msg == null)
+//                return CommonMethod.getReturnMessageOK();
+//            else
+//                return CommonMethod.getReturnMessageError(msg);
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//        }
+//        return CommonMethod.getReturnMessageError("上传错误！");
+//    }
 
 }
