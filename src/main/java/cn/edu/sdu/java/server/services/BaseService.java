@@ -280,14 +280,26 @@ public class BaseService {
     }
 
 
-    public DataResponse uploadPhoto(byte[] barr,String remoteFile) {
+    public DataResponse uploadPhoto(byte[] barr, String remoteFile) {
         try {
-            OutputStream os = new FileOutputStream(new File(attachFolder + remoteFile));
+            // 确保目录存在
+            File dir = new File(attachFolder + "photo/");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            
+            // 使用完整路径保存文件
+            File file = new File(attachFolder + remoteFile);
+            OutputStream os = new FileOutputStream(file);
             os.write(barr);
             os.close();
+            
+            System.out.println("照片已保存到: " + file.getAbsolutePath());
+            
             return CommonMethod.getReturnMessageOK();
         } catch (Exception e) {
-            return CommonMethod.getReturnMessageError("上传错误");
+            e.printStackTrace();
+            return CommonMethod.getReturnMessageError("上传错误: " + e.getMessage());
         }
     }
 
