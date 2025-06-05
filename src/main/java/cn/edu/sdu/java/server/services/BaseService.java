@@ -15,6 +15,7 @@ import cn.edu.sdu.java.server.repositorys.UserRepository;
 import cn.edu.sdu.java.server.repositorys.UserTypeRepository;
 import cn.edu.sdu.java.server.util.ComDataUtil;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -51,6 +52,33 @@ public class BaseService {
         this.menuInfoRepository = menuInfoRepository;
         this.dictionaryInfoRepository = dictionaryInfoRepository;
         this.userTypeRepository = userTypeRepository;
+    }
+
+    @PostConstruct
+    public void init() {
+        // 确保附件根目录存在
+        File rootDir = new File(attachFolder);
+        if (!rootDir.exists()) {
+            boolean created = rootDir.mkdirs();
+            if (created) {
+                log.info("已创建附件根目录: {}", rootDir.getAbsolutePath());
+            } else {
+                log.error("无法创建附件根目录: {}", rootDir.getAbsolutePath());
+            }
+        }
+        
+        // 确保照片目录存在
+        File photoDir = new File(attachFolder + "photo/");
+        if (!photoDir.exists()) {
+            boolean created = photoDir.mkdirs();
+            if (created) {
+                log.info("已创建照片目录: {}", photoDir.getAbsolutePath());
+            } else {
+                log.error("无法创建照片目录: {}", photoDir.getAbsolutePath());
+            }
+        }
+        
+        log.info("附件存储目录配置为: {}", attachFolder);
     }
 
     /**
@@ -261,20 +289,30 @@ public class BaseService {
         String fileName = dataRequest.getString("fileName");
         try {
             File file = new File(attachFolder + fileName);
+            log.info("尝试读取文件: {}", file.getAbsolutePath());
+            
+            if (!file.exists()) {
+                log.warn("文件不存在: {}", file.getAbsolutePath());
+                return ResponseEntity.notFound().build();
+            }
+            
             int len = (int) file.length();
             byte[] data = new byte[len];
-            FileInputStream in = new FileInputStream(file);
-            int size = in.read(data);
-            in.close();
+            try (FileInputStream in = new FileInputStream(file)) {
+                int size = in.read(data);
+                log.info("已读取 {} 字节的数据", size);
+            }
+            
             MediaType mType = new MediaType(MediaType.APPLICATION_OCTET_STREAM);
             StreamingResponseBody stream = outputStream -> {
                 outputStream.write(data);
             };
+            
             return ResponseEntity.ok()
                     .contentType(mType)
                     .body(stream);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("获取文件数据失败: {}", e.getMessage(), e);
         }
         return ResponseEntity.internalServerError().build();
     }
@@ -283,22 +321,30 @@ public class BaseService {
     public DataResponse uploadPhoto(byte[] barr, String remoteFile) {
         try {
             // 确保目录存在
-            File dir = new File(attachFolder + "photo/");
+            String photoDir = attachFolder + "photo/";
+            File dir = new File(photoDir);
             if (!dir.exists()) {
-                dir.mkdirs();
+                boolean created = dir.mkdirs();
+                if (!created) {
+                    log.error("无法创建目录: {}", photoDir);
+                    return CommonMethod.getReturnMessageError("无法创建照片存储目录");
+                }
+                log.info("已创建目录: {}", photoDir);
             }
             
             // 使用完整路径保存文件
             File file = new File(attachFolder + remoteFile);
-            OutputStream os = new FileOutputStream(file);
-            os.write(barr);
-            os.close();
+            log.info("正在保存照片到: {}", file.getAbsolutePath());
             
-            System.out.println("照片已保存到: " + file.getAbsolutePath());
+            try (OutputStream os = new FileOutputStream(file)) {
+                os.write(barr);
+            }
+            
+            log.info("照片已成功保存到: {}", file.getAbsolutePath());
             
             return CommonMethod.getReturnMessageOK();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("上传照片失败: {}", e.getMessage(), e);
             return CommonMethod.getReturnMessageError("上传错误: " + e.getMessage());
         }
     }
