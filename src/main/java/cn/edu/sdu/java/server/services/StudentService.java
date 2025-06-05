@@ -36,15 +36,17 @@ public class StudentService {
     private final UserRepository userRepository;  //学生数据操作自动注入
     private final UserTypeRepository userTypeRepository; //用户类型数据操作自动注入
     private final PasswordEncoder encoder;  //密码服务自动注入
+    private final HonorRepository honorRepository;
 //    private final FeeRepository feeRepository;  //消费数据操作自动注入
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
-    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FamilyMemberRepository familyMemberRepository, SystemService systemService) {
+    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, HonorRepository honorRepository, FamilyMemberRepository familyMemberRepository, SystemService systemService) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.userTypeRepository = userTypeRepository;
         this.encoder = encoder;
+        this.honorRepository = honorRepository;
 //        this.feeRepository = feeRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
@@ -107,6 +109,10 @@ public class StudentService {
             op = studentRepository.findById(personId);   //查询获得实体对象
             if(op.isPresent()) {
                 s = op.get();
+                List<Honor> hList=honorRepository.findByStudentId(personId);
+                for(Honor honor:hList) {
+                    honorRepository.delete(honor);
+                }
                 Optional<User> uOp = userRepository.findById(personId); //查询对应该学生的账户
                 //删除对应该学生的账户
                 uOp.ifPresent(userRepository::delete);
