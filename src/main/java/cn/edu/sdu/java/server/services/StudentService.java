@@ -39,7 +39,11 @@ public class StudentService {
     private final FeeRepository feeRepository;  //消费数据操作自动注入
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
-    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, SystemService systemService) {
+    
+    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, 
+                         UserRepository userRepository, UserTypeRepository userTypeRepository, 
+                         PasswordEncoder encoder, FeeRepository feeRepository, 
+                         FamilyMemberRepository familyMemberRepository, SystemService systemService) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
@@ -107,6 +111,9 @@ public class StudentService {
             op = studentRepository.findById(personId);   //查询获得实体对象
             if(op.isPresent()) {
                 s = op.get();
+                
+                // 不再尝试手动删除竞赛记录，依赖于数据库级联删除
+                
                 Optional<User> uOp = userRepository.findById(personId); //查询对应该学生的账户
                 //删除对应该学生的账户
                 uOp.ifPresent(userRepository::delete);

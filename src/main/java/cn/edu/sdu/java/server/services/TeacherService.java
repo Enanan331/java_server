@@ -38,7 +38,9 @@ public class TeacherService {
     private final FeeRepository feeRepository;  //消费数据操作自动注入
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
-    public TeacherService(PersonRepository personRepository, TeacherRepository teacherRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, SystemService systemService) {
+    private final InnovationRepository innovationRepository;
+
+    public TeacherService(PersonRepository personRepository, TeacherRepository teacherRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, SystemService systemService, InnovationRepository innovationRepository) {
         this.personRepository = personRepository;
         this.teacherRepository = teacherRepository;
         this.userRepository = userRepository;
@@ -47,6 +49,7 @@ public class TeacherService {
         this.feeRepository = feeRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
+        this.innovationRepository = innovationRepository;
     }
 
     public Map<String,Object> getMapFromTeacher(Teacher t) {
@@ -100,6 +103,17 @@ public class TeacherService {
             op = teacherRepository.findById(personId);   //查询获得实体对象
             if(op.isPresent()) {
                 t = op.get();
+                
+                // 查找所有以该教师为指导老师的创新成果
+                List<Innovation> innovations = innovationRepository.findByAdvisorPersonId(personId);
+                if (innovations != null && !innovations.isEmpty()) {
+                    for (Innovation innovation : innovations) {
+                        innovation.setAdvisor(null);
+                        innovation.setAdvisorName("无");
+                        innovationRepository.save(innovation);
+                    }
+                }
+                
                 Optional<User> uOp = userRepository.findById(personId); //查询对应该教师的账户
                 //删除对应该教师的账户
                 uOp.ifPresent(userRepository::delete);
