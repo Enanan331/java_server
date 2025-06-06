@@ -2,6 +2,7 @@ package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.DictionaryInfo;
 import cn.edu.sdu.java.server.models.MenuInfo;
+import cn.edu.sdu.java.server.models.Photo;
 import cn.edu.sdu.java.server.models.User;
 import cn.edu.sdu.java.server.models.UserType;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
@@ -11,6 +12,7 @@ import cn.edu.sdu.java.server.payload.response.OptionItem;
 import cn.edu.sdu.java.server.payload.response.OptionItemList;
 import cn.edu.sdu.java.server.repositorys.DictionaryInfoRepository;
 import cn.edu.sdu.java.server.repositorys.MenuInfoRepository;
+import cn.edu.sdu.java.server.repositorys.PhotoRepository;
 import cn.edu.sdu.java.server.repositorys.UserRepository;
 import cn.edu.sdu.java.server.repositorys.UserTypeRepository;
 import cn.edu.sdu.java.server.util.ComDataUtil;
@@ -19,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,13 +47,17 @@ public class BaseService {
     private final MenuInfoRepository menuInfoRepository; //菜单数据操作自动注入
     private final DictionaryInfoRepository dictionaryInfoRepository;  //数据字典数据操作自动注入
     private final UserTypeRepository userTypeRepository;   //用户类型数据操作自动注入
+    private final PhotoRepository photoRepository;
 
-    public BaseService(PasswordEncoder encoder, UserRepository userRepository, MenuInfoRepository menuInfoRepository, DictionaryInfoRepository dictionaryInfoRepository, UserTypeRepository userTypeRepository) {
+    public BaseService(PasswordEncoder encoder, UserRepository userRepository, MenuInfoRepository menuInfoRepository, 
+                      DictionaryInfoRepository dictionaryInfoRepository, UserTypeRepository userTypeRepository,
+                      PhotoRepository photoRepository) {
         this.encoder = encoder;
         this.userRepository = userRepository;
         this.menuInfoRepository = menuInfoRepository;
         this.dictionaryInfoRepository = dictionaryInfoRepository;
         this.userTypeRepository = userTypeRepository;
+        this.photoRepository = photoRepository;
     }
 
     /**
@@ -262,6 +269,36 @@ public class BaseService {
         log.info("请求文件: {}", fileName);
         
         try {
+            // 检查是否是照片请求
+            if (fileName.startsWith("photo/")) {
+                String photoFileName = new File(fileName).getName();
+                Integer personId = null;
+                
+                // 假设文件名格式为 "personId.jpg"
+                if (photoFileName.endsWith(".jpg")) {
+                    try {
+                        personId = Integer.parseInt(photoFileName.substring(0, photoFileName.lastIndexOf(".")));
+                    } catch (NumberFormatException e) {
+                        log.warn("无法从文件名提取personId: {}", photoFileName);
+                    }
+                }
+                
+                if (personId != null) {
+                    Photo photo = photoRepository.findByPersonId(personId);
+                    if (photo != null && photo.getData() != null) {
+                        MediaType mType = MediaType.parseMediaType(photo.getContentType());
+                        StreamingResponseBody stream = outputStream -> {
+                            outputStream.write(photo.getData());
+                        };
+                        
+                        return ResponseEntity.ok()
+                                .contentType(mType)
+                                .body(stream);
+                    }
+                }
+            }
+            
+            // 如果不是照片或找不到照片，尝试从文件系统获取
             File file = new File(attachFolder + fileName);
             
             if (!file.exists()) {
@@ -306,34 +343,56 @@ public class BaseService {
                 remoteFile = remoteFile.substring(0, remoteFile.indexOf("?"));
             }
             
-            // 确保目录存在
-            File photoDir = new File(attachFolder + "photo");
-            if (!photoDir.exists()) {
-                boolean created = photoDir.mkdirs();
-                if (!created) {
-                    log.error("无法创建照片目录: {}", photoDir.getAbsolutePath());
-                    return CommonMethod.getReturnMessageError("无法创建照片目录: " + photoDir.getAbsolutePath());
+            // 检查是否是照片文件
+            if (remoteFile.startsWith("photo/")) {
+                String photoFileName = new File(remoteFile).getName();
+                Integer personId = null;
+                
+                // 假设文件名格式为 "personId.jpg"
+                if (photoFileName.endsWith(".jpg")) {
+                    try {
+                        personId = Integer.parseInt(photoFileName.substring(0, photoFileName.lastIndexOf(".")));
+                    } catch (NumberFormatException e) {
+                        log.warn("无法从文件名提取personId: {}", photoFileName);
+                    }
                 }
-                log.info("创建照片目录: {}", photoDir.getAbsolutePath());
+                
+                if (personId != null) {
+                    // 查找或创建照片记录
+                    Photo photo = photoRepository.findByPersonId(personId);
+                    if (photo == null) {
+                        photo = new Photo();
+                        photo.setPersonId(personId);
+                    }
+                    
+                    photo.setFileName(photoFileName);
+                    photo.setContentType("image/jpeg");
+                    photo.setData(barr);
+                    photo.setUploadDate(new Date());
+                    
+                    photoRepository.save(photo);
+                    log.info("照片上传成功并保存到数据库: {}", photoFileName);
+                    return CommonMethod.getReturnMessageOK();
+                }
+            }
+            
+            // 如果不是照片或无法提取personId，则保存到文件系统
+            // 确保目录存在
+            File parentDir = new File(attachFolder + new File(remoteFile).getParent());
+            if (!parentDir.exists()) {
+                boolean created = parentDir.mkdirs();
+                if (!created) {
+                    log.error("无法创建目录: {}", parentDir.getAbsolutePath());
+                    return CommonMethod.getReturnMessageError("无法创建目录: " + parentDir.getAbsolutePath());
+                }
+                log.info("创建目录: {}", parentDir.getAbsolutePath());
             }
             
             // 写入文件
             File file = new File(attachFolder + remoteFile);
-            
-            // 确保父目录存在
-            File parentDir = file.getParentFile();
-            if (!parentDir.exists()) {
-                boolean created = parentDir.mkdirs();
-                if (!created) {
-                    log.error("无法创建父目录: {}", parentDir.getAbsolutePath());
-                    return CommonMethod.getReturnMessageError("无法创建父目录: " + parentDir.getAbsolutePath());
-                }
-                log.info("创建父目录: {}", parentDir.getAbsolutePath());
-            }
-            
             try (FileOutputStream os = new FileOutputStream(file)) {
                 os.write(barr);
-                log.info("照片上传成功: {}", file.getAbsolutePath());
+                log.info("文件上传成功: {}", file.getAbsolutePath());
             } catch (IOException e) {
                 log.error("写入文件失败: {}", e.getMessage(), e);
                 return CommonMethod.getReturnMessageError("写入文件失败: " + e.getMessage());
@@ -341,7 +400,7 @@ public class BaseService {
             
             return CommonMethod.getReturnMessageOK();
         } catch (Exception e) {
-            log.error("照片上传失败: {}", e.getMessage(), e);
+            log.error("上传失败: {}", e.getMessage(), e);
             return CommonMethod.getReturnMessageError("上传错误: " + e.getMessage());
         }
     }
