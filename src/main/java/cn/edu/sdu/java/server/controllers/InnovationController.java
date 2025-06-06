@@ -36,4 +36,9 @@ public class InnovationController {
     public List<OptionItem> getTeacherOptionList(@Valid @RequestBody DataRequest dataRequest) {
         return innovationService.getTeacherOptionList(dataRequest);
     }
+
+    @PostMapping("/innovationDelete")
+    public DataResponse innovationDelete(@Valid @RequestBody DataRequest dataRequest) {
+        return innovationService.innovationDelete(dataRequest);
+    }
 }

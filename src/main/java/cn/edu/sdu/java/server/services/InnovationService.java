@@ -150,4 +150,18 @@ public class InnovationService {
         
         return itemList;
     }
+
+    public DataResponse innovationDelete(DataRequest dataRequest) {
+        Integer innovationId = dataRequest.getInteger("innovationId");
+        if (innovationId != null) {
+            Optional<Innovation> optionalInnovation = innovationRepository.findById(innovationId);
+            if (optionalInnovation.isPresent()) {
+                Innovation innovation = optionalInnovation.get();
+                innovationRepository.delete(innovation);
+                systemService.modifyLog(innovation, false);
+                return CommonMethod.getReturnMessageOK();
+            }
+        }
+        return CommonMethod.getReturnMessageError("未找到要删除的创新成果");
+    }
 }
