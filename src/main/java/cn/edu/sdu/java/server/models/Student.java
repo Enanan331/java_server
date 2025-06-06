@@ -33,7 +33,7 @@ public class Student {
     private Integer personId;
 
     @OneToOne
-    @JoinColumn(name="personId")
+    @JoinColumn(name="person_id")//注意连接数据库时的格式
     @JsonIgnore
     private Person person;
 

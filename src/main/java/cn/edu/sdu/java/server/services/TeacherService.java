@@ -35,16 +35,16 @@ public class TeacherService {
     private final UserRepository userRepository;  //教师数据操作自动注入
     private final UserTypeRepository userTypeRepository; //用户类型数据操作自动注入
     private final PasswordEncoder encoder;  //密码服务自动注入
-//    private final FeeRepository feeRepository;  //消费数据操作自动注入
+    private final FeeRepository feeRepository;  //消费数据操作自动注入
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
-    public TeacherService(PersonRepository personRepository, TeacherRepository teacherRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FamilyMemberRepository familyMemberRepository, SystemService systemService) {
+    public TeacherService(PersonRepository personRepository, TeacherRepository teacherRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, SystemService systemService) {
         this.personRepository = personRepository;
         this.teacherRepository = teacherRepository;
         this.userRepository = userRepository;
         this.userTypeRepository = userTypeRepository;
         this.encoder = encoder;
-//        this.feeRepository = feeRepository;
+        this.feeRepository = feeRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
     }

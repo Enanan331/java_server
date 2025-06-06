@@ -4,6 +4,7 @@ import cn.edu.sdu.java.server.models.Fee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 /*
@@ -25,6 +26,8 @@ public interface FeeRepository extends JpaRepository<Fee,Integer> {
     List<Fee> findListByTeacher(Integer personId);
 
     @Query(value = "select sum(money) from Fee where student.personId=?1 and day like ?2%")
-    Double getMoneyByPersonIdAndDate(Integer personId,String date);
+    Double getMoneyByPersonIdAndDate(Integer personId, String date);
 
+    @Query("SELECT MAX(e.feeId) FROM Fee e")
+    Integer findMaxId();
 }
