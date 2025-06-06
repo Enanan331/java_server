@@ -280,14 +280,58 @@ public class BaseService {
     }
 
 
-    public DataResponse uploadPhoto(byte[] barr,String remoteFile) {
+    public DataResponse uploadPhoto(byte[] barr, String remoteFile) {
         try {
-            OutputStream os = new FileOutputStream(new File(attachFolder + remoteFile));
-            os.write(barr);
-            os.close();
+            log.info("开始上传照片: {}", remoteFile);
+            
+            // 移除可能的查询参数
+            if (remoteFile.contains("?")) {
+                remoteFile = remoteFile.substring(0, remoteFile.indexOf("?"));
+            }
+            
+            // 确保目录存在
+            String photoDir = attachFolder + "photo";
+            File dir = new File(photoDir);
+            if (!dir.exists()) {
+                boolean created = dir.mkdirs();
+                if (!created) {
+                    log.error("无法创建目录: {}", photoDir);
+                    return CommonMethod.getReturnMessageError("无法创建照片存储目录: " + photoDir);
+                }
+                log.info("创建目录: {}", photoDir);
+            }
+            
+            // 检查目录是否可写
+            if (!dir.canWrite()) {
+                log.error("目录不可写: {}", photoDir);
+                return CommonMethod.getReturnMessageError("照片存储目录不可写: " + photoDir);
+            }
+            
+            // 写入文件
+            String fullPath = attachFolder + remoteFile;
+            log.info("写入文件: {}", fullPath);
+            File file = new File(fullPath);
+            
+            // 确保父目录存在
+            File parentDir = file.getParentFile();
+            if (!parentDir.exists()) {
+                boolean created = parentDir.mkdirs();
+                if (!created) {
+                    log.error("无法创建父目录: {}", parentDir.getAbsolutePath());
+                    return CommonMethod.getReturnMessageError("无法创建父目录: " + parentDir.getAbsolutePath());
+                }
+            }
+            
+            try (FileOutputStream os = new FileOutputStream(file)) {
+                os.write(barr);
+                os.flush();
+            }
+            
+            log.info("照片上传成功: {}", fullPath);
             return CommonMethod.getReturnMessageOK();
         } catch (Exception e) {
-            return CommonMethod.getReturnMessageError("上传错误");
+            log.error("照片上传失败: {}", e.getMessage(), e);
+            return CommonMethod.getReturnMessageError("上传错误: " + e.getMessage());
         }
     }
 

@@ -32,6 +32,6 @@ spring:
       enabled: true
       force: true
 attach:
-  folder: /teach-2025/
+  folder: ./uploads/
 logging:
   config: classpath:loggback.xml
