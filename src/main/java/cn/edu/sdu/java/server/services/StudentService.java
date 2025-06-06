@@ -46,7 +46,6 @@ public class StudentService {
         this.userTypeRepository = userTypeRepository;
         this.encoder = encoder;
         this.feeRepository = feeRepository;
-//        this.feeRepository = feeRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
     }
