@@ -40,12 +40,13 @@ public class StudentService {
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
     private final InnovationService innovationService;
+    private final CompetitionService competitionService;
 
     public StudentService(PersonRepository personRepository, StudentRepository studentRepository, 
                          UserRepository userRepository, UserTypeRepository userTypeRepository, 
                          PasswordEncoder encoder, FeeRepository feeRepository, 
                          FamilyMemberRepository familyMemberRepository, SystemService systemService,
-                         InnovationService innovationService) {
+                         InnovationService innovationService, CompetitionService competitionService) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
@@ -55,6 +56,7 @@ public class StudentService {
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
         this.innovationService = innovationService;
+        this.competitionService = competitionService;
     }
 
     public Map<String,Object> getMapFromStudent(Student s) {
@@ -208,8 +210,11 @@ public class StudentService {
         s.setClassName(CommonMethod.getString(form, "className"));
         studentRepository.save(s);  //修改保存学生信息
         
-        // 确保调用了updateStudentInfo方法
+        // 更新创新成果中的学生信息
         innovationService.updateStudentInfo(s);
+        
+        // 更新学科竞赛中的学生信息
+        competitionService.updateStudentInfo(s);
         
         systemService.modifyLog(s,isNew);
         return CommonMethod.getReturnData(s.getPersonId());  // 将personId返回前端

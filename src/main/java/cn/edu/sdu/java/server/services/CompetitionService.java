@@ -111,4 +111,44 @@ public class CompetitionService {
         }
         return CommonMethod.getReturnData(m);
     }
+
+    /**
+     * 更新学生信息变更
+     * 当学生信息在学生管理中被修改时，同步更新学科竞赛中的学生信息
+     * @param student 更新后的学生对象
+     */
+    @Transactional
+    public void updateStudentInfo(Student student) {
+        if (student == null || student.getPerson() == null) {
+            // 如果学生对象或学生的人员信息为空，记录警告并返回
+            System.out.println("updateStudentInfo: student or student.person is null");
+            return;
+        }
+        
+        String studentNum = student.getPerson().getNum();
+        String studentName = student.getPerson().getName();
+        Integer personId = student.getPersonId();
+        
+        System.out.println("Updating competition records for student: ID=" + personId + 
+                          ", Num=" + studentNum + ", Name=" + studentName);
+        
+        // 查找该学生的所有学科竞赛记录
+        List<Competition> competitions = competitionRepository.findByStudentPersonId(personId);
+        
+        System.out.println("Found " + competitions.size() + " competition records to update");
+        
+        // 更新每条记录中的学生学号和姓名
+        for (Competition competition : competitions) {
+            System.out.println("Updating competition ID=" + competition.getCompetitionId() + 
+                              ": changing studentNum from " + competition.getStudentNum() + 
+                              " to " + studentNum + ", studentName from " + 
+                              competition.getStudentName() + " to " + studentName);
+            
+            competition.setStudentNum(studentNum);
+            competition.setStudentName(studentName);
+            competitionRepository.save(competition);
+        }
+        
+        System.out.println("Completed updating competition records for student ID=" + personId);
+    }
 }
