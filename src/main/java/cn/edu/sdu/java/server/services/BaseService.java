@@ -259,24 +259,41 @@ public class BaseService {
 
     public ResponseEntity<StreamingResponseBody> getFileByteData(DataRequest dataRequest) {
         String fileName = dataRequest.getString("fileName");
+        log.info("请求文件: {}", fileName);
+        
         try {
             File file = new File(attachFolder + fileName);
+            
+            if (!file.exists()) {
+                log.error("文件不存在: {}", file.getAbsolutePath());
+                return ResponseEntity.notFound().build();
+            }
+            
+            if (!file.canRead()) {
+                log.error("文件不可读: {}", file.getAbsolutePath());
+                return ResponseEntity.status(403).build();
+            }
+            
             int len = (int) file.length();
             byte[] data = new byte[len];
-            FileInputStream in = new FileInputStream(file);
-            int size = in.read(data);
-            in.close();
+            
+            try (FileInputStream in = new FileInputStream(file)) {
+                int size = in.read(data);
+                log.info("读取文件成功: {}, 大小: {} 字节", file.getAbsolutePath(), size);
+            }
+            
             MediaType mType = new MediaType(MediaType.APPLICATION_OCTET_STREAM);
             StreamingResponseBody stream = outputStream -> {
                 outputStream.write(data);
             };
+            
             return ResponseEntity.ok()
                     .contentType(mType)
                     .body(stream);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("获取文件数据失败: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
-        return ResponseEntity.internalServerError().build();
     }
 
 
@@ -290,27 +307,18 @@ public class BaseService {
             }
             
             // 确保目录存在
-            String photoDir = attachFolder + "photo";
-            File dir = new File(photoDir);
-            if (!dir.exists()) {
-                boolean created = dir.mkdirs();
+            File photoDir = new File(attachFolder + "photo");
+            if (!photoDir.exists()) {
+                boolean created = photoDir.mkdirs();
                 if (!created) {
-                    log.error("无法创建目录: {}", photoDir);
-                    return CommonMethod.getReturnMessageError("无法创建照片存储目录: " + photoDir);
+                    log.error("无法创建照片目录: {}", photoDir.getAbsolutePath());
+                    return CommonMethod.getReturnMessageError("无法创建照片目录: " + photoDir.getAbsolutePath());
                 }
-                log.info("创建目录: {}", photoDir);
-            }
-            
-            // 检查目录是否可写
-            if (!dir.canWrite()) {
-                log.error("目录不可写: {}", photoDir);
-                return CommonMethod.getReturnMessageError("照片存储目录不可写: " + photoDir);
+                log.info("创建照片目录: {}", photoDir.getAbsolutePath());
             }
             
             // 写入文件
-            String fullPath = attachFolder + remoteFile;
-            log.info("写入文件: {}", fullPath);
-            File file = new File(fullPath);
+            File file = new File(attachFolder + remoteFile);
             
             // 确保父目录存在
             File parentDir = file.getParentFile();
@@ -320,14 +328,17 @@ public class BaseService {
                     log.error("无法创建父目录: {}", parentDir.getAbsolutePath());
                     return CommonMethod.getReturnMessageError("无法创建父目录: " + parentDir.getAbsolutePath());
                 }
+                log.info("创建父目录: {}", parentDir.getAbsolutePath());
             }
             
             try (FileOutputStream os = new FileOutputStream(file)) {
                 os.write(barr);
-                os.flush();
+                log.info("照片上传成功: {}", file.getAbsolutePath());
+            } catch (IOException e) {
+                log.error("写入文件失败: {}", e.getMessage(), e);
+                return CommonMethod.getReturnMessageError("写入文件失败: " + e.getMessage());
             }
             
-            log.info("照片上传成功: {}", fullPath);
             return CommonMethod.getReturnMessageOK();
         } catch (Exception e) {
             log.error("照片上传失败: {}", e.getMessage(), e);
