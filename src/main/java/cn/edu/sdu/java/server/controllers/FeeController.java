@@ -32,6 +32,7 @@ public class FeeController {
     public DataResponse getSumFee(@PathVariable Integer id, @PathVariable String date) {
         DataRequest dataRequest = new DataRequest();
         dataRequest.add("personId", id);
+        dataRequest.add("day", date);
         return feeService.getSumFee(dataRequest);
     }
     @GetMapping("/getLatestFeeRecord()")
