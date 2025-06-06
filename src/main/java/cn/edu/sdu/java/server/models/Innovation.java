@@ -14,26 +14,31 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Innovation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "innovation_id")
     private Integer innovationId;
-
-    @Size(max = 20)
-    private String studentNum;
-
-    @Size(max = 50)
-    private String studentName;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    @OnDelete(action = OnDeleteAction.CASCADE) // 添加级联删除注解
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Student student;
 
+    @Size(max = 20)
+    @Column(name = "student_num")
+    private String studentNum;
+
+    @Size(max = 50)
+    @Column(name = "student_name")
+    private String studentName;
+
     @Size(max = 200)
+    @Column(name = "achievement")
     private String achievement;
 
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher advisor;
-
+    
     @Size(max = 50)
+    @Column(name = "advisor_name")
     private String advisorName;
 }

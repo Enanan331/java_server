@@ -7,9 +7,14 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface InnovationRepository extends JpaRepository<Innovation, Integer> {
-    @Query("select i from Innovation i where i.studentNum like %?1% or i.studentName like %?1%")
+    // 更新查询，通过学生的学号或姓名搜索
+    @Query("select i from Innovation i join i.student s join s.person p where p.num like %?1% or p.name like %?1%")
     List<Innovation> findInnovationListByNumName(String numName);
     
-    // 添加根据教师ID查询创新成果的方法
+    // 保留现有的通过指导教师查找的方法
     List<Innovation> findByAdvisorPersonId(Integer personId);
+    
+    // 添加通过学生ID查找创新成果的方法
+    @Query("select i from Innovation i where i.student.personId = ?1")
+    List<Innovation> findByStudentPersonId(Integer personId);
 }

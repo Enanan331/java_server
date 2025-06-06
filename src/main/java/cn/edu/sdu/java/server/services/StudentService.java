@@ -39,11 +39,13 @@ public class StudentService {
     private final FeeRepository feeRepository;  //消费数据操作自动注入
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
-    
+    private final InnovationService innovationService;
+
     public StudentService(PersonRepository personRepository, StudentRepository studentRepository, 
                          UserRepository userRepository, UserTypeRepository userTypeRepository, 
                          PasswordEncoder encoder, FeeRepository feeRepository, 
-                         FamilyMemberRepository familyMemberRepository, SystemService systemService) {
+                         FamilyMemberRepository familyMemberRepository, SystemService systemService,
+                         InnovationService innovationService) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
@@ -52,6 +54,7 @@ public class StudentService {
         this.feeRepository = feeRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
+        this.innovationService = innovationService;
     }
 
     public Map<String,Object> getMapFromStudent(Student s) {
@@ -204,6 +207,10 @@ public class StudentService {
         s.setMajor(CommonMethod.getString(form, "major"));
         s.setClassName(CommonMethod.getString(form, "className"));
         studentRepository.save(s);  //修改保存学生信息
+        
+        // 确保调用了updateStudentInfo方法
+        innovationService.updateStudentInfo(s);
+        
         systemService.modifyLog(s,isNew);
         return CommonMethod.getReturnData(s.getPersonId());  // 将personId返回前端
     }
