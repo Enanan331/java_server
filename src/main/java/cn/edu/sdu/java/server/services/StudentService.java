@@ -33,6 +33,7 @@ public class StudentService {
     private static final Logger log = LoggerFactory.getLogger(StudentService.class);
     private final PersonRepository personRepository;  //人员数据操作自动注入
     private final StudentRepository studentRepository;  //学生数据操作自动注入
+    private final HonorRepository honorRepository;  //荣誉数据操作自动注入
     private final UserRepository userRepository;  //学生数据操作自动注入
     private final UserTypeRepository userTypeRepository; //用户类型数据操作自动注入
     private final PasswordEncoder encoder;  //密码服务自动注入
@@ -42,13 +43,14 @@ public class StudentService {
     private final InnovationService innovationService;
     private final CompetitionService competitionService;
 
-    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, 
-                         UserRepository userRepository, UserTypeRepository userTypeRepository, 
-                         PasswordEncoder encoder,// FeeRepository feeRepository,
-                         FamilyMemberRepository familyMemberRepository, SystemService systemService,
-                         InnovationService innovationService, CompetitionService competitionService) {
+    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, HonorRepository honorRepository,
+                          UserRepository userRepository, UserTypeRepository userTypeRepository,
+                          PasswordEncoder encoder,// FeeRepository feeRepository,
+                          FamilyMemberRepository familyMemberRepository, SystemService systemService,
+                          InnovationService innovationService, CompetitionService competitionService) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
+        this.honorRepository = honorRepository;
         this.userRepository = userRepository;
         this.userTypeRepository = userTypeRepository;
         this.encoder = encoder;
@@ -113,6 +115,10 @@ public class StudentService {
         Student s = null;
         Optional<Student> op;
         if (personId != null && personId > 0) {
+            // 删除学生之前，先删除相关的荣誉记录
+            List<Honor> honors = honorRepository.findByStudentId(personId);
+            //删除荣誉记录
+            honorRepository.deleteAll(honors);
             op = studentRepository.findById(personId);   //查询获得实体对象
             if(op.isPresent()) {
                 s = op.get();
