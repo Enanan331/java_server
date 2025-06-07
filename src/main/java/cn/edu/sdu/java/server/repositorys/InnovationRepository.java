@@ -11,9 +11,7 @@ import java.util.List;
 public interface InnovationRepository extends JpaRepository<Innovation, Integer> {
     @Query("select i from Innovation i where " +
            "i.studentNum like %?1% or " +
-           "i.studentName like %?1% or " +
-           "i.achievement like %?1% or " +
-           "i.advisorName like %?1%")
+           "i.studentName like %?1%")
     List<Innovation> findInnovationListByNumName(String numName);
     
     // 添加通过学号查找创新成果的方法

@@ -186,7 +186,17 @@ public class ClubService {
         // 设置指导老师
         if (advisorId != null) {
             Optional<Teacher> advisorOpt = teacherRepository.findById(advisorId);
-            advisorOpt.ifPresent(club::setAdvisor);
+            if (advisorOpt.isPresent()) {
+                Teacher advisor = advisorOpt.get();
+                // 新增校验逻辑
+                List<Club> allClubs = clubRepository.findAll();
+                for (Club c : allClubs) {
+                    if (c.getAdvisor() != null && c.getAdvisor().getPersonId().equals(advisor.getPersonId())) {
+                        return CommonMethod.getReturnMessageError("该老师已经是其他社团的指导老师！一个老师只能担任一个社团的指导老师");
+                    }
+                }
+                club.setAdvisor(advisor);
+            }
         }
 
         clubRepository.save(club);
