@@ -1,9 +1,10 @@
 package cn.edu.sdu.java.server.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
@@ -14,23 +15,24 @@ public class Innovation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer innovationId;
 
-    @Size(max = 20)
+    @Column(length = 20)
     private String studentNum;
 
-    @Size(max = 50)
+    @Column(length = 50)
     private String studentName;
 
-    @ManyToOne
-    @JoinColumn(name = "student_id")
-    private Student student;
-
-    @Size(max = 200)
+    @Column(length = 500)
     private String achievement;
 
     @ManyToOne
-    @JoinColumn(name = "teacher_id")
+    @JoinColumn(name = "advisor_id")
     private Teacher advisor;
 
-    @Size(max = 50)
+    @Column(length = 50)
     private String advisorName;
+    
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    @OnDelete(action = OnDeleteAction.CASCADE) // 确保级联删除注解存在
+    private Student student;
 }

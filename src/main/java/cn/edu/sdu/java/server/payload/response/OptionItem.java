@@ -15,17 +15,20 @@ public class OptionItem {
     private Integer id;
     private String value;
     private String title;
+    private String label; // 添加label属性
+    
     public OptionItem(){
-
     }
+    
     public OptionItem(Integer id, String value, String title){
         this.id = id;
         this.value = value;
         this.title = title;
+        this.label = title; // 设置label与title相同
     }
 
     public String toString(){
-        return title;
+        return label != null ? label : title; // 修改toString方法，优先返回label
     }
 
 }

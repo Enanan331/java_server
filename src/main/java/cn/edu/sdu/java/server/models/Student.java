@@ -20,6 +20,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -57,10 +58,10 @@ public class Student {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<Club> clubs = new HashSet<>();
 
-//    @ManyToMany(
-//            mappedBy = "participants",
-//            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
-//    )
-//    @OnDelete(action = OnDeleteAction.CASCADE)
-//    private Set<StudentActivity> activities = new HashSet<>();
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
+    private List<Competition> competitions;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
+    private List<Innovation> innovations;
 }
