@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Getter
 @Setter
 @Entity
@@ -18,10 +21,8 @@ public class FamilyMember {
 
     @ManyToOne
     @JoinColumn(name="studentPersonId")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Student student;//通过输入的学生姓名查找出来
-
-//    @Size(max = 50)
-//    private String studentName;//
 
     @Size(max=10)
     private String relation;//?
