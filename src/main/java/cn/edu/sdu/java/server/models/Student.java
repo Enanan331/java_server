@@ -58,12 +58,6 @@ public class Student {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<Club> clubs = new HashSet<>();
 
-//    @ManyToMany(
-//            mappedBy = "participants",
-//            cascade = {CascadeType.PERSIST, CascadeType.MERGE}
-//    )
-//    @OnDelete(action = OnDeleteAction.CASCADE)
-//    private Set<StudentActivity> activities = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
     private List<Competition> competitions;

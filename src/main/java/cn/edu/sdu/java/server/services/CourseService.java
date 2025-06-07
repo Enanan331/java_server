@@ -1,13 +1,11 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.Course;
-import cn.edu.sdu.java.server.models.Homework;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.payload.response.OptionItem;
 import cn.edu.sdu.java.server.payload.response.OptionItemList;
 import cn.edu.sdu.java.server.repositorys.CourseRepository;
-import cn.edu.sdu.java.server.repositorys.HomeworkRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,12 +16,11 @@ import java.util.*;
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
-    private final HomeworkRepository homeworkRepository;
     private final SystemService systemService;
 
-    public CourseService(CourseRepository courseRepository, HomeworkRepository homeworkRepository, SystemService systemService) {
+    public CourseService(CourseRepository courseRepository, SystemService systemService) {
         this.courseRepository = courseRepository;
-        this.homeworkRepository = homeworkRepository;
+
         this.systemService = systemService;
     }
     public Map<String,Object> getMapFromCourse(Course c){
@@ -155,8 +152,6 @@ public class CourseService {
                     courseRepository.save(dependent);
                 });
 
-                // 3. 删除作业和课程本身
-                homeworkRepository.deleteAll(course.getHomework());
                 courseRepository.delete(course);
             });
         }

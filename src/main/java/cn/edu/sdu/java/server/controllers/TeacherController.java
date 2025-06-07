@@ -84,41 +84,5 @@ public class TeacherController {
         return teacherService.teacherEditSave(dataRequest);
     }
 
-    /**
-     * importFeeData 前端上传消费流水Excl表数据服务
-     *
-     * @param barr         文件二进制数据
-     * @param uploader     上传者
-     * @param personIdStr teacher 主键
-     * @param fileName     前端上传的文件名
-     */
-//    @PostMapping(path = "/importFeeData")
-//    public DataResponse importFeeData(@RequestBody byte[] barr,
-//                                      @RequestParam(name = "uploader") String uploader,
-//                                      @RequestParam(name = "personId") String personIdStr,
-//                                      @RequestParam(name = "fileName") String fileName) {
-//        return teacherService.importFeeData(barr, personIdStr);
-//    }
 
-    /**
-     * getTeacherListExcl 前端下载导出教师基本信息Excl表数据
-     *
-     */
-    @PostMapping("/getTeacherListExcl")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<StreamingResponseBody> getTeacherListExcl(@Valid @RequestBody DataRequest dataRequest) {
-        return teacherService.getTeacherListExcl(dataRequest);
-    }
-
-    @PostMapping("/getTeacherPageData")
-    @PreAuthorize("hasRole('ADMIN')")
-    public DataResponse getTeacherPageData(@Valid @RequestBody DataRequest dataRequest) {
-        return teacherService.getTeacherPageData(dataRequest);
-    }
-
-//    @PostMapping("/importFeeDataWeb")
-//    @PreAuthorize("hasRole('TEACHER')")
-//    public DataResponse importFeeDataWeb(@RequestParam Map<String,Object> request, @RequestParam("file") MultipartFile file) {
-//        return teacherService.importFeeDataWeb(request, file);
-//    }
 }
