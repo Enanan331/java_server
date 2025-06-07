@@ -11,6 +11,9 @@ import jakarta.persistence.*;
  */
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Getter
 @Setter
 @Entity
@@ -24,10 +27,12 @@ public class Score {
 
     @ManyToOne
     @JoinColumn(name = "personId")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Student student;
 
     @ManyToOne
     @JoinColumn(name = "courseId")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Course course;
 
     private Integer mark;
