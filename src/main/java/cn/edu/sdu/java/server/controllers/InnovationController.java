@@ -41,4 +41,9 @@ public class InnovationController {
     public DataResponse innovationDelete(@Valid @RequestBody DataRequest dataRequest) {
         return innovationService.innovationDelete(dataRequest);
     }
+
+    @PostMapping("/getInnovationById")
+    public DataResponse getInnovationById(@Valid @RequestBody DataRequest dataRequest) {
+        return innovationService.getInnovationById(dataRequest);
+    }
 }

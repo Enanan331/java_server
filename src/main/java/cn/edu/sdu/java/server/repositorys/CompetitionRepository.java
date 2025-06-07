@@ -13,4 +13,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Intege
     
     // 添加根据学生ID查询竞赛记录的方法
     List<Competition> findByStudentPersonId(Integer personId);
+    
+    // 添加根据学号查询竞赛记录的方法
+    List<Competition> findByStudentNum(String studentNum);
 }

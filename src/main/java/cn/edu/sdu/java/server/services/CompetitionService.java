@@ -133,7 +133,7 @@ public class CompetitionService {
                           ", Num=" + studentNum + ", Name=" + studentName);
         
         // 查找该学生的所有学科竞赛记录
-        List<Competition> competitions = competitionRepository.findByStudentPersonId(personId);
+        List<Competition> competitions = competitionRepository.findByStudentNum(studentNum);
         
         System.out.println("Found " + competitions.size() + " competition records to update");
         
