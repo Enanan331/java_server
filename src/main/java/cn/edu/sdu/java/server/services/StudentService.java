@@ -33,26 +33,28 @@ public class StudentService {
     private static final Logger log = LoggerFactory.getLogger(StudentService.class);
     private final PersonRepository personRepository;  //人员数据操作自动注入
     private final StudentRepository studentRepository;  //学生数据操作自动注入
+    private final HonorRepository honorRepository;  //荣誉数据操作自动注入
     private final UserRepository userRepository;  //学生数据操作自动注入
     private final UserTypeRepository userTypeRepository; //用户类型数据操作自动注入
     private final PasswordEncoder encoder;  //密码服务自动注入
-    private final FeeRepository feeRepository;  //消费数据操作自动注入
+//    private final FeeRepository feeRepository;  //消费数据操作自动注入
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
     private final InnovationService innovationService;
     private final CompetitionService competitionService;
 
-    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, 
-                         UserRepository userRepository, UserTypeRepository userTypeRepository, 
-                         PasswordEncoder encoder, FeeRepository feeRepository, 
-                         FamilyMemberRepository familyMemberRepository, SystemService systemService,
-                         InnovationService innovationService, CompetitionService competitionService) {
+    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, HonorRepository honorRepository,
+                          UserRepository userRepository, UserTypeRepository userTypeRepository,
+                          PasswordEncoder encoder,// FeeRepository feeRepository,
+                          FamilyMemberRepository familyMemberRepository, SystemService systemService,
+                          InnovationService innovationService, CompetitionService competitionService) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
+        this.honorRepository = honorRepository;
         this.userRepository = userRepository;
         this.userTypeRepository = userTypeRepository;
         this.encoder = encoder;
-        this.feeRepository = feeRepository;
+//        this.feeRepository = feeRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
         this.innovationService = innovationService;
@@ -113,6 +115,10 @@ public class StudentService {
         Student s = null;
         Optional<Student> op;
         if (personId != null && personId > 0) {
+            // 删除学生之前，先删除相关的荣誉记录
+            List<Honor> honors = honorRepository.findByStudentId(personId);
+            //删除荣誉记录
+            honorRepository.deleteAll(honors);
             op = studentRepository.findById(personId);   //查询获得实体对象
             if(op.isPresent()) {
                 s = op.get();
@@ -219,238 +225,4 @@ public class StudentService {
         systemService.modifyLog(s,isNew);
         return CommonMethod.getReturnData(s.getPersonId());  // 将personId返回前端
     }
-
-    public List<Map<String,Object>> getStudentScoreList(List<Score> sList) {
-        List<Map<String,Object>> list = new ArrayList<>();
-        if (sList == null || sList.isEmpty())
-            return list;
-        Map<String,Object> m;
-        Course c;
-        for (Score s : sList) {
-            m = new HashMap<>();
-            c = s.getCourse();
-            m.put("studentNum", s.getStudent().getPerson().getNum());
-            m.put("scoreId", s.getScoreId());
-            m.put("courseNum", c.getNum());
-            m.put("courseName", c.getName());
-            m.put("credit", c.getCredit());
-            m.put("mark", s.getMark());
-            m.put("ranking", s.getRanking());
-            list.add(m);
-        }
-        return list;
-    }
-
-
-    public List<Map<String,Object>> getStudentMarkList(List<Score> sList) {
-        String[] title = {"优", "良", "中", "及格", "不及格"};
-        int[] count = new int[5];
-        List<Map<String,Object>> list = new ArrayList<>();
-        if (sList == null || sList.isEmpty())
-            return list;
-        Map<String,Object> m;
-        Course c;
-        for (Score s : sList) {
-            c = s.getCourse();
-            if (s.getMark() >= 90)
-                count[0]++;
-            else if (s.getMark() >= 80)
-                count[1]++;
-            else if (s.getMark() >= 70)
-                count[2]++;
-            else if (s.getMark() >= 60)
-                count[3]++;
-            else
-                count[4]++;
-        }
-        for (int i = 0; i < 5; i++) {
-            m = new HashMap<>();
-            m.put("name", title[i]);
-            m.put("title", title[i]);
-            m.put("value", count[i]);
-            list.add(m);
-        }
-        return list;
-    }
-
-//
-//    public List<Map<String,Object>> getStudentFeeList(Integer personId) {
-//        List<Fee> sList = feeRepository.findListByStudent(personId);  // 查询某个学生消费记录集合
-//        List<Map<String,Object>> list = new ArrayList<>();
-//        if (sList == null || sList.isEmpty())
-//            return list;
-//        Map<String,Object> m;
-//        Course c;
-//        for (Fee s : sList) {
-//            m = new HashMap<>();
-//            m.put("title", s.getDay());
-//            m.put("value", s.getMoney());
-//            list.add(m);
-//        }
-//        return list;
-//    }
-
-
-//
-//
-//    public String importFeeData(Integer personId, InputStream in){
-//        try {
-//            Student student = studentRepository.findById(personId).get();
-//            XSSFWorkbook workbook = new XSSFWorkbook(in);  //打开Excl数据流
-//            XSSFSheet sheet = workbook.getSheetAt(0);
-//            Iterator<Row> rowIterator = sheet.iterator();
-//            Row row;
-//            Cell cell;
-//            int i;
-//            i = 1;
-//            String day, money;
-//            Optional<Fee> fOp;
-//            double dMoney;
-//            Fee f;
-//            rowIterator.next();
-//            while (rowIterator.hasNext()) {
-//                row = rowIterator.next();
-//                cell = row.getCell(0);
-//                if (cell == null)
-//                    break;
-//                day = cell.getStringCellValue();  //获取一行消费记录 日期 金额
-//                cell = row.getCell(1);
-//                money = cell.getStringCellValue();
-//                fOp = feeRepository.findByStudentPersonIdAndDay(personId, day);  //查询是否存在记录
-//                if (fOp.isEmpty()) {
-//                    f = new Fee();
-//                    f.setDay(day);
-//                    f.setStudent(student);  //不存在 添加
-//                } else {
-//                    f = fOp.get();  //存在 更新
-//                }
-//                if (money != null && !money.isEmpty())
-//                    dMoney = Double.parseDouble(money);
-//                else
-//                    dMoney = 0d;
-//                f.setMoney(dMoney);
-//                feeRepository.save(f);
-//            }
-//            workbook.close();  //关闭Excl输入流
-//            return null;
-//        } catch (Exception e) {
-//            log.error(e.getMessage());
-//            return "上传错误！";
-//        }
-//
-//    }
-//
-//    public DataResponse importFeeData(@RequestBody byte[] barr,
-//                                      String personIdStr
-//                                      ) {
-//        Integer personId =  Integer.parseInt(personIdStr);
-//        String msg = importFeeData(personId,new ByteArrayInputStream(barr));
-//        if(msg == null)
-//            return CommonMethod.getReturnMessageOK();
-//        else
-//            return CommonMethod.getReturnMessageError(msg);
-//    }
-
-    public ResponseEntity<StreamingResponseBody> getStudentListExcl( DataRequest dataRequest) {
-        String numName = dataRequest.getString("numName");
-        List<Map<String,Object>> list = getStudentMapList(numName);
-        Integer[] widths = {8, 20, 10, 15, 15, 15, 25, 10, 15, 30, 20, 30};
-        int i, j, k;
-        String[] titles = {"序号", "学号", "姓名", "学院", "专业", "班级", "证件号码", "性别", "出生日期", "邮箱", "电话", "地址"};
-        String outPutSheetName = "student.xlsx";
-        XSSFWorkbook wb = new XSSFWorkbook();
-        XSSFCellStyle styleTitle = CommonMethod.createCellStyle(wb, 20);
-        XSSFSheet sheet = wb.createSheet(outPutSheetName);
-        for (j = 0; j < widths.length; j++) {
-            sheet.setColumnWidth(j, widths[j] * 256);
-        }
-        //合并第一行
-        XSSFCellStyle style = CommonMethod.createCellStyle(wb, 11);
-        XSSFRow row = null;
-        XSSFCell[] cell = new XSSFCell[widths.length];
-        row = sheet.createRow((int) 0);
-        for (j = 0; j < widths.length; j++) {
-            cell[j] = row.createCell(j);
-            cell[j].setCellStyle(style);
-            cell[j].setCellValue(titles[j]);
-            cell[j].getCellStyle();
-        }
-        Map<String,Object> m;
-        if (list != null && !list.isEmpty()) {
-            for (i = 0; i < list.size(); i++) {
-                row = sheet.createRow(i + 1);
-                for (j = 0; j < widths.length; j++) {
-                    cell[j] = row.createCell(j);
-                    cell[j].setCellStyle(style);
-                }
-                m = list.get(i);
-                cell[0].setCellValue((i + 1) + "");
-                cell[1].setCellValue(CommonMethod.getString(m, "num"));
-                cell[2].setCellValue(CommonMethod.getString(m, "name"));
-                cell[3].setCellValue(CommonMethod.getString(m, "dept"));
-                cell[4].setCellValue(CommonMethod.getString(m, "major"));
-                cell[5].setCellValue(CommonMethod.getString(m, "className"));
-                cell[6].setCellValue(CommonMethod.getString(m, "card"));
-                cell[7].setCellValue(CommonMethod.getString(m, "genderName"));
-                cell[8].setCellValue(CommonMethod.getString(m, "birthday"));
-                cell[9].setCellValue(CommonMethod.getString(m, "email"));
-                cell[10].setCellValue(CommonMethod.getString(m, "phone"));
-                cell[11].setCellValue(CommonMethod.getString(m, "address"));
-            }
-        }
-        try {
-            StreamingResponseBody stream = wb::write;
-            return ResponseEntity.ok()
-                    .contentType(CommonMethod.exelType)
-                    .body(stream);
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
-
-    }
-
-    public DataResponse getStudentPageData(DataRequest dataRequest) {
-        String numName = dataRequest.getString("numName");
-        Integer cPage = dataRequest.getCurrentPage();
-        int dataTotal = 0;
-        int size = 40;
-        List<Map<String,Object>> dataList = new ArrayList<>();
-        Page<Student> page = null;
-        Pageable pageable = PageRequest.of(cPage, size);
-        page = studentRepository.findStudentPageByNumName(numName, pageable);
-        Map<String,Object> m;
-        if (page != null) {
-            dataTotal = (int) page.getTotalElements();
-            List<Student> list = page.getContent();
-            if (!list.isEmpty()) {
-                for (Student student : list) {
-                    m = getMapFromStudent(student);
-                    dataList.add(m);
-                }
-            }
-        }
-        Map<String,Object> data = new HashMap<>();
-        data.put("dataTotal", dataTotal);
-        data.put("pageSize", size);
-        data.put("dataList", dataList);
-        return CommonMethod.getReturnData(data);
-    }
-
-
-
-//    public DataResponse importFeeDataWeb(Map<String,Object> request,MultipartFile file) {
-//        Integer personId = CommonMethod.getInteger(request, "personId");
-//        try {
-//            String msg= importFeeData(personId,file.getInputStream());
-//            if(msg == null)
-//                return CommonMethod.getReturnMessageOK();
-//            else
-//                return CommonMethod.getReturnMessageError(msg);
-//        } catch (Exception e) {
-//            log.error(e.getMessage());
-//        }
-//        return CommonMethod.getReturnMessageError("上传错误！");
-//    }
-
 }

@@ -41,8 +41,6 @@ public class Course  {
     @ManyToOne
     @JoinColumn(name="pre_course_id")
     private Course preCourse;
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Homework> homework = new ArrayList<>();//作业,一门课可能有多个作业
 
     @ElementCollection
     @CollectionTable(

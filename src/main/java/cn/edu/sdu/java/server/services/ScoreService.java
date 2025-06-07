@@ -103,5 +103,4 @@ public class ScoreService {
         }
         return CommonMethod.getReturnMessageOK();
     }
-
 }
