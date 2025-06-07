@@ -2,16 +2,12 @@ package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.Fee;
 import cn.edu.sdu.java.server.models.Person;
-import cn.edu.sdu.java.server.models.Student;
-import cn.edu.sdu.java.server.models.Teacher;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.FeeRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.*;
 
@@ -23,7 +19,7 @@ public class FeeService {
     }
 
     @Transactional
-    public DataResponse getFee(@Valid @RequestBody DataRequest dataRequest) {//单条消费记录查询
+    public DataResponse getFee(DataRequest dataRequest) {//单条消费记录查询
         String day = dataRequest.getString("day");
         Integer personId = dataRequest.getInteger("personId");
         Optional<Fee> fee = findFeeByPersonIdAndDay(personId,day);
@@ -34,9 +30,8 @@ public class FeeService {
     }
     @Transactional
     public DataResponse getFeeList(DataRequest dataRequest) {//单人，查询此人所有消费记录
-        List<Map<String,Object>> datalist;
         Integer personId = dataRequest.getInteger("personId");
-        datalist = getFeeMapList(personId);
+        List<Map<String,Object>> datalist = getFeeMapList(personId);
         return CommonMethod.getReturnData(datalist);
     }
     @Transactional
@@ -61,15 +56,14 @@ public class FeeService {
     public DataResponse addFee(DataRequest dataRequest) {
         Fee fee = new Fee();
         fee.setFeeId(dataRequest.getInteger("feeId"));
+        fee.setPerson((Person)dataRequest.get("person"));
         fee.setDay(dataRequest.getString("day"));
         fee.setMoney(dataRequest.getDouble("money"));
-        if(fee.getStudent()!=null){fee.setStudent(fee.getStudent());}
-        else if(fee.getTeacher()!=null){fee.setTeacher(fee.getTeacher());}
         feeRepository.saveAndFlush(fee);
         return CommonMethod.getReturnMessageOK("添加成功！");
     }
 
-    //实用性存疑，考虑实际，消费应设为不可改
+    //实用性存疑，考虑实际，消费应设为不可改，没有改消费Person
     @Transactional
     public DataResponse updateFee(DataRequest dataRequest){
         Integer feeId = dataRequest.getInteger("feeId");
@@ -96,64 +90,32 @@ public class FeeService {
         return CommonMethod.getReturnMessageOK("id为"+feeId+"的消费记录被删除了!");
     }
 
-    public Map<String,Object> getMapFromPerson(Student s) {
+    public Map<String,Object> getMapFromFee(Fee p) {
         Map<String,Object> m = new HashMap<>();
-        if(s == null)
-            return m;
-        Person p = s.getPerson();
         if(p == null)
             return m;
-        m.put("personId", s.getPersonId());
-        m.put("num",p.getNum());
-        m.put("name",p.getName());
-        m.put("card",p.getCard());
+        m.put("personId", p.getPerson().getPersonId());
+        m.put("money",p.getMoney());
+        m.put("day",p.getDay());
+        m.put("feeId",p.getFeeId());
+        m.put("name",p.getPerson().getName());
         return m;
     }
-    public Map<String,Object> getMapFromPerson(Teacher t) {
-        Map<String,Object> m = new HashMap<>();
-        if(t == null)
-            return m;
-        Person p = t.getPerson();
-        if(p == null)
-            return m;
-        m.put("personId", t.getPersonId());
-        m.put("num",p.getNum());
-        m.put("name",p.getName());
-        m.put("card",p.getCard());
-        return m;
-    }
-
 
     public Optional<Fee> findFeeByPersonIdAndDay(Integer personId, String day) {
-        // 先查学生记录，不存在再查教师记录
-        return feeRepository.findByStudentPersonIdAndDay(personId, day)
-                .or(() -> feeRepository.findByTeacherPersonIdAndDay(personId, day));
+        return feeRepository.findByPersonPersonIdAndDay(personId,day);
     }
-    public List<Fee> findFeeByPersonId(Integer personId) {//按List查
-        List<Fee> studentFee = feeRepository.findListByStudent(personId);
-        List<Fee> teacherFee = feeRepository.findListByTeacher(personId);
-        if(studentFee != null){
-            return studentFee;
-        }
-        return teacherFee;
-    }
+//    public List<Fee> findFeeByPersonId(Integer personId) {//按List查
+//        return feeRepository.findListByPerson(personId);
+//    }
     public List<Map<String,Object>> getFeeMapList(Integer personId){
         List<Map<String,Object>> datalist=new ArrayList<>();
-        List<Fee> feeList = findFeeByPersonId(personId);
-        if(feeList.isEmpty()){
+        List<Fee> feeList = feeRepository.findListByPersonId(personId);
+        if(feeList == null || feeList.isEmpty())
             return datalist;
+        for (Fee fee : feeList) {
+            datalist.add(getMapFromFee(fee));
         }
-        for(Fee f : feeList){
-            if(f.getStudent()==null)break;
-            Map<String,Object> data = getMapFromPerson(f.getStudent());
-            datalist.add(data);
-        }
-        for(Fee f : feeList){
-            if(f.getTeacher()==null)break;
-            Map<String,Object> data = getMapFromPerson(f.getTeacher());
-            datalist.add(data);
-        }
-        //查到的人要么是老师要么是学生
         return datalist;
     }
 

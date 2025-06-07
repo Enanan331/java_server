@@ -23,12 +23,8 @@ public class Fee {
     private Integer feeId;
 
     @ManyToOne
-    @JoinColumn(name = "student_id")
-    private Student student;
-
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private Teacher teacher;
+    @JoinColumn(name = "person_id")
+    private Person person;
 
     @Size(max = 20)
     private String day;
