@@ -77,38 +77,52 @@ public class InnovationService {
         String studentName = CommonMethod.getString(form, "studentName");
         String achievement = CommonMethod.getString(form, "achievement");
         Integer teacherId = CommonMethod.getInteger(form, "teacherId");
+        Integer innovationId = CommonMethod.getInteger(form, "innovationId");
         
         // 添加调试日志
-        log.info("保存创新成果: 学号={}, 姓名={}, 成果={}, 教师ID={}", 
-                studentNum, studentName, achievement, teacherId);
+        log.info("保存创新成果: ID={}, 学号={}, 姓名={}, 成果={}, 教师ID={}", 
+                innovationId, studentNum, studentName, achievement, teacherId);
         
         // 验证学生是否存在于学生管理系统中
-        // 使用personRepository而不是studentRepository，因为我们需要通过学号查询
-        Optional<Person> personOpt = personRepository.findByNum(studentNum);
-        if (!personOpt.isPresent()) {
+        Optional<Student> studentOpt = studentRepository.findByPersonNum(studentNum);
+        if (!studentOpt.isPresent()) {
             log.warn("学号为 {} 的学生不存在于学生管理系统中", studentNum);
             return CommonMethod.getReturnMessageError("该学生不存在于学生管理系统中，请先在学生管理中添加");
         }
         
+        Student student = studentOpt.get();
+        
         // 验证学生姓名是否匹配
-        Person person = personOpt.get();
-        if (!person.getName().equals(studentName)) {
+        if (!student.getPerson().getName().equals(studentName)) {
             log.warn("学号 {} 对应的学生姓名为 {}，与输入的姓名 {} 不匹配", 
-                    studentNum, person.getName(), studentName);
+                    studentNum, student.getPerson().getName(), studentName);
             return CommonMethod.getReturnMessageError("学号与姓名不匹配，请检查输入");
         }
         
-        // 验证该人员是否为学生
-        Optional<Student> studentOpt = studentRepository.findById(person.getPersonId());
-        if (!studentOpt.isPresent()) {
-            log.warn("ID为 {} 的人员不是学生", person.getPersonId());
-            return CommonMethod.getReturnMessageError("该人员不是学生，请检查输入");
+        Innovation innovation;
+        
+        // 如果是更新现有记录
+        if (innovationId != null && innovationId > 0) {
+            Optional<Innovation> innovationOpt = innovationRepository.findById(innovationId);
+            if (innovationOpt.isPresent()) {
+                innovation = innovationOpt.get();
+                log.info("更新现有创新成果记录: ID={}", innovationId);
+            } else {
+                innovation = new Innovation();
+                log.info("创建新的创新成果记录，指定ID={}", innovationId);
+                innovation.setInnovationId(innovationId);
+            }
+        } else {
+            innovation = new Innovation();
+            log.info("创建新的创新成果记录");
         }
         
-        Innovation innovation = new Innovation();
         innovation.setStudentNum(studentNum);
         innovation.setStudentName(studentName);
         innovation.setAchievement(achievement);
+        
+        // 设置学生关联 - 确保这一步正确执行
+        innovation.setStudent(student);
         
         // 设置指导教师
         if (teacherId != null && teacherId > 0) {
@@ -122,14 +136,16 @@ public class InnovationService {
                 log.warn("未找到ID为 {} 的教师", teacherId);
             }
         } else {
-            log.info("未提供教师ID或ID无效");
+            innovation.setAdvisor(null);
+            innovation.setAdvisorName("无");
+            log.info("未提供教师ID或ID无效，设置为无指导教师");
         }
         
         // 保存记录
         innovation = innovationRepository.save(innovation);
         
         // 记录系统修改日志
-        systemService.modifyLog(innovation, true);
+        systemService.modifyLog(innovation, innovationId == null);
         
         // 打印保存后的ID
         log.info("创新成果保存成功，ID={}", innovation.getInnovationId());

@@ -3,6 +3,8 @@ package cn.edu.sdu.java.server.models;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
@@ -31,5 +33,6 @@ public class Innovation {
     
     @ManyToOne
     @JoinColumn(name = "student_id")
+    @OnDelete(action = OnDeleteAction.CASCADE) // 确保级联删除注解存在
     private Student student;
 }
