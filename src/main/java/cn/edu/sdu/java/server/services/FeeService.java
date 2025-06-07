@@ -1,6 +1,7 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.Fee;
+import cn.edu.sdu.java.server.models.Pp;
 import cn.edu.sdu.java.server.models.Person;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
@@ -56,7 +57,7 @@ public class FeeService {
     public DataResponse addFee(DataRequest dataRequest) {
         Fee fee = new Fee();
         fee.setFeeId(dataRequest.getInteger("feeId"));
-        fee.setPerson((Person)dataRequest.get("person"));
+        fee.setPerson((Pp)dataRequest.get("person"));
         fee.setDay(dataRequest.getString("day"));
         fee.setMoney(dataRequest.getDouble("money"));
         feeRepository.saveAndFlush(fee);

@@ -24,7 +24,7 @@ public class Fee {
 
     @ManyToOne
     @JoinColumn(name = "person_id")
-    private Person person;
+    private Pp person;
 
     @Size(max = 20)
     private String day;
